@@ -1,6 +1,19 @@
-console.log("JavaScript is working!");
-
 const taskInput = document.querySelector("#task-input");
+const taskForm = document.querySelector("form");
+const taskList = document.querySelector("#task-list");
 
-console.log("Input element:", taskInput);
-console.log("Input value:", taskInput.value);
+taskForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const taskText = taskInput.value.trim();
+ 
+    if (taskText === "") {
+         return;
+      }
+
+    const newTask = document.createElement("li");
+
+    newTask.textContent = taskText;
+
+    taskList.appendChild(newTask);
+});
