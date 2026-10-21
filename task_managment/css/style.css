@@ -31,3 +31,8 @@ button {
 button:hover {
   background-color: #1d4ed8;
 }
+
+.completed {
+    text-decoration: line-through;
+    color: gray;
+}
