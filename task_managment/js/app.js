@@ -52,3 +52,7 @@ taskForm.addEventListener("submit", function (event) {
     taskInput.value = "";
     taskInput.focus();
 });
+
+localStorage.setItem("task", "Learn JavaScript");
+
+console.log(localStorage.getItem("task"));
