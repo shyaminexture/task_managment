@@ -64,27 +64,85 @@ function displayTask(task) {
         saveTasks();
         renderTasks();
     });
+// Edit task text and priority
+// Edit task using an inline form
+editButton.addEventListener("click", function () {
+    // Prevent opening the same edit form multiple times
+    if (newTask.querySelector(".edit-form")) {
+        return;
+    }
 
-    // Edit task text
-    editButton.addEventListener("click", function () {
-        const updatedText = prompt("Edit your task:", task.text);
+    // Create the editing form
+    const editForm = document.createElement("form");
+    editForm.classList.add("edit-form");
 
-        if (updatedText === null) {
-            return;
+    // Create task name input
+    const editInput = document.createElement("input");
+    editInput.type = "text";
+    editInput.value = task.text;
+    editInput.required = true;
+
+    // Create priority dropdown
+    const editPriority = document.createElement("select");
+
+    ["low", "medium", "high"].forEach(function (priority) {
+        const option = document.createElement("option");
+
+        option.value = priority;
+        option.textContent =
+            priority.charAt(0).toUpperCase() + priority.slice(1);
+
+        if (priority === (task.priority || "medium")) {
+            option.selected = true;
         }
 
-        const trimmedText = updatedText.trim();
+        editPriority.appendChild(option);
+    });
 
-        if (trimmedText === "") {
+    // Create Save button
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.textContent = "Save Changes";
+
+    // Create Cancel button
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+
+    // Add controls to the editing form
+    editForm.append(
+        editInput,
+        editPriority,
+        saveButton,
+        cancelButton
+    );
+
+    // Show the form below the task
+    newTask.appendChild(editForm);
+
+    // Save the updated task
+    editForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const updatedText = editInput.value.trim();
+
+        if (updatedText === "") {
             alert("Task cannot be empty.");
             return;
         }
 
-        task.text = trimmedText;
+        task.text = updatedText;
+        task.priority = editPriority.value;
 
         saveTasks();
         renderTasks();
     });
+
+    // Cancel editing
+    cancelButton.addEventListener("click", function () {
+        editForm.remove();
+    });
+});
 
     // Delete task
     deleteButton.addEventListener("click", function () {
