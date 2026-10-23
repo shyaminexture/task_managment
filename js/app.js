@@ -1,14 +1,14 @@
-
 const taskInput = document.querySelector("#task-input");
 const taskForm = document.querySelector("form");
 const taskList = document.querySelector("#task-list");
 const filterButtons = document.querySelectorAll("#task-filters button");
 const taskPriority = document.querySelector("#task-priority");
+const searchInput = document.querySelector("#search-input");
 
 // Remember the selected filter
 let currentFilter = "all";
 
-// Load saved tasks
+// Load saved tasks from localStorage
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 // Display one task
@@ -64,85 +64,85 @@ function displayTask(task) {
         saveTasks();
         renderTasks();
     });
-// Edit task text and priority
-// Edit task using an inline form
-editButton.addEventListener("click", function () {
-    // Prevent opening the same edit form multiple times
-    if (newTask.querySelector(".edit-form")) {
-        return;
-    }
 
-    // Create the editing form
-    const editForm = document.createElement("form");
-    editForm.classList.add("edit-form");
-
-    // Create task name input
-    const editInput = document.createElement("input");
-    editInput.type = "text";
-    editInput.value = task.text;
-    editInput.required = true;
-
-    // Create priority dropdown
-    const editPriority = document.createElement("select");
-
-    ["low", "medium", "high"].forEach(function (priority) {
-        const option = document.createElement("option");
-
-        option.value = priority;
-        option.textContent =
-            priority.charAt(0).toUpperCase() + priority.slice(1);
-
-        if (priority === (task.priority || "medium")) {
-            option.selected = true;
-        }
-
-        editPriority.appendChild(option);
-    });
-
-    // Create Save button
-    const saveButton = document.createElement("button");
-    saveButton.type = "submit";
-    saveButton.textContent = "Save Changes";
-
-    // Create Cancel button
-    const cancelButton = document.createElement("button");
-    cancelButton.type = "button";
-    cancelButton.textContent = "Cancel";
-
-    // Add controls to the editing form
-    editForm.append(
-        editInput,
-        editPriority,
-        saveButton,
-        cancelButton
-    );
-
-    // Show the form below the task
-    newTask.appendChild(editForm);
-
-    // Save the updated task
-    editForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const updatedText = editInput.value.trim();
-
-        if (updatedText === "") {
-            alert("Task cannot be empty.");
+    // Edit task text and priority
+    editButton.addEventListener("click", function () {
+        // Prevent opening multiple edit forms
+        if (newTask.querySelector(".edit-form")) {
             return;
         }
 
-        task.text = updatedText;
-        task.priority = editPriority.value;
+        // Create editing form
+        const editForm = document.createElement("form");
+        editForm.classList.add("edit-form");
 
-        saveTasks();
-        renderTasks();
-    });
+        // Create task name input
+        const editInput = document.createElement("input");
+        editInput.type = "text";
+        editInput.value = task.text;
+        editInput.required = true;
 
-    // Cancel editing
-    cancelButton.addEventListener("click", function () {
-        editForm.remove();
+        // Create priority dropdown
+        const editPriority = document.createElement("select");
+
+        ["low", "medium", "high"].forEach(function (priority) {
+            const option = document.createElement("option");
+
+            option.value = priority;
+            option.textContent =
+                priority.charAt(0).toUpperCase() + priority.slice(1);
+
+            if (priority === (task.priority || "medium")) {
+                option.selected = true;
+            }
+
+            editPriority.appendChild(option);
+        });
+
+        // Create Save button
+        const saveButton = document.createElement("button");
+        saveButton.type = "submit";
+        saveButton.textContent = "Save Changes";
+
+        // Create Cancel button
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.textContent = "Cancel";
+
+        // Add controls to editing form
+        editForm.append(
+            editInput,
+            editPriority,
+            saveButton,
+            cancelButton
+        );
+
+        // Show editing form below the task
+        newTask.appendChild(editForm);
+
+        // Save updated task
+        editForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const updatedText = editInput.value.trim();
+
+            if (updatedText === "") {
+                alert("Task cannot be empty.");
+                return;
+            }
+
+            task.text = updatedText;
+            task.priority = editPriority.value;
+
+            saveTasks();
+            renderTasks();
+        });
+
+        // Cancel editing
+        cancelButton.addEventListener("click", function () {
+            editForm.remove();
+        });
     });
-});
 
     // Delete task
     deleteButton.addEventListener("click", function () {
@@ -163,20 +163,27 @@ function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Display tasks according to the selected filter
+// Display tasks according to search and selected filter
 function renderTasks() {
     taskList.innerHTML = "";
 
+    // Get search text and ignore extra spaces/capitalization
+    const searchText = searchInput.value.toLowerCase().trim();
+
+    // Filter tasks by status and search text
     const filteredTasks = tasks.filter(function (task) {
-        if (currentFilter === "active") {
-            return !task.completed;
-        }
+        // Check selected status filter
+        const matchesFilter =
+            currentFilter === "all" ||
+            (currentFilter === "active" && !task.completed) ||
+            (currentFilter === "completed" && task.completed);
 
-        if (currentFilter === "completed") {
-            return task.completed;
-        }
+        // Check whether task name contains the search text
+        const matchesSearch =
+            task.text.toLowerCase().includes(searchText);
 
-        return true;
+        // Task must match both conditions
+        return matchesFilter && matchesSearch;
     });
 
     // Show a message when no tasks match
@@ -186,12 +193,17 @@ function renderTasks() {
         if (tasks.length === 0) {
             message.textContent =
                 "No tasks yet. Add your first task!";
+        } else if (searchText !== "") {
+            message.textContent =
+                "No tasks match your search.";
         } else if (currentFilter === "active") {
             message.textContent =
                 "No active tasks. Great job!";
         } else if (currentFilter === "completed") {
             message.textContent =
                 "No completed tasks yet.";
+        } else {
+            message.textContent = "No tasks found.";
         }
 
         taskList.appendChild(message);
@@ -215,7 +227,7 @@ taskForm.addEventListener("submit", function (event) {
         return;
     }
 
-    // Create a task object
+    // Create task object
     const task = {
         id: crypto.randomUUID(),
         text: taskText,
@@ -228,7 +240,7 @@ taskForm.addEventListener("submit", function (event) {
     saveTasks();
     renderTasks();
 
-    // Clear the input
+    // Clear input and focus it
     taskInput.value = "";
     taskInput.focus();
 });
@@ -240,6 +252,11 @@ filterButtons.forEach(function (button) {
 
         renderTasks();
     });
+});
+
+// Search tasks as the user types
+searchInput.addEventListener("input", function () {
+    renderTasks();
 });
 
 // Display saved tasks when the page opens
