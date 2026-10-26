@@ -1,38 +1,150 @@
-body{
+/* General page styling */
+body {
     font-family: Arial, sans-serif;
     background-color: #f4f6f9;
     color: #333;
     margin: 0;
     padding: 30px;
 }
-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+
+/* Main task creation form only */
+body > form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
 }
 
+/* Input fields */
 input {
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
 }
 
+/* Main task input */
+#task-input {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Dropdowns */
+select {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+}
+
+/* Buttons */
 button {
-  padding: 12px 20px;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
-button:hover {
-  background-color: #1d4ed8;
+    padding: 12px 20px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
 }
 
+button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Completed tasks */
 .completed {
     text-decoration: line-through;
     color: gray;
+}
+
+/* Task priority labels */
+.priority {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.priority-low {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.priority-medium {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.priority-high {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Inline editing form */
+.edit-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #f0f4f8;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Editing form input and dropdown */
+.edit-form input,
+.edit-form select {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Editing text field */
+.edit-form input {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Editing buttons */
+.edit-form button {
+    padding: 10px 14px;
+}
+
+/* Task list */
+#task-list {
+    padding-left: 25px;
+}
+
+#task-list li {
+    margin-bottom: 12px;
+}
+
+/* Small screens */
+@media (max-width: 600px) {
+    body {
+        padding: 16px;
+    }
+
+    body > form {
+        align-items: stretch;
+    }
+
+    .edit-form {
+        align-items: stretch;
+    }
+
+    .edit-form input {
+        min-width: 100%;
+    }
 }

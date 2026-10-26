@@ -1,29 +1,54 @@
 const taskInput = document.querySelector("#task-input");
 const taskForm = document.querySelector("form");
 const taskList = document.querySelector("#task-list");
+const filterButtons = document.querySelectorAll("#task-filters button");
+const taskPriority = document.querySelector("#task-priority");
+const searchInput = document.querySelector("#search-input");
+
+// Remember the selected filter
+let currentFilter = "all";
 
 // Load saved tasks from localStorage
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-// Function to display a task
-function displayTask(taskText, isCompleted = false) {
+// Display one task
+function displayTask(task) {
     const newTask = document.createElement("li");
+    newTask.dataset.taskId = task.id;
 
     // Create checkbox
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.checked = isCompleted;
+    checkbox.checked = task.completed;
 
     // Create task text
     const taskLabel = document.createElement("span");
-    taskLabel.textContent = taskText;
+    taskLabel.textContent = task.text;
 
-    if (isCompleted) {
+    if (task.completed) {
         taskLabel.classList.add("completed");
     }
 
     newTask.appendChild(checkbox);
     newTask.appendChild(taskLabel);
+
+    // Create priority label
+    const priorityLabel = document.createElement("span");
+    const priority = task.priority || "medium";
+
+    priorityLabel.textContent =
+        priority.charAt(0).toUpperCase() + priority.slice(1);
+
+    priorityLabel.classList.add("priority", `priority-${priority}`);
+
+    newTask.appendChild(priorityLabel);
+
+    // Create Edit button
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.type = "button";
+
+    newTask.appendChild(editButton);
 
     // Create Delete button
     const deleteButton = document.createElement("button");
@@ -32,30 +57,105 @@ function displayTask(taskText, isCompleted = false) {
 
     newTask.appendChild(deleteButton);
 
-    // Mark task as completed or incomplete
+    // Update completion status
     checkbox.addEventListener("change", function () {
-        taskLabel.classList.toggle("completed", checkbox.checked);
+        task.completed = checkbox.checked;
 
         saveTasks();
+        renderTasks();
+    });
+
+    // Edit task text and priority
+    editButton.addEventListener("click", function () {
+        // Prevent opening multiple edit forms
+        if (newTask.querySelector(".edit-form")) {
+            return;
+        }
+
+        // Create editing form
+        const editForm = document.createElement("form");
+        editForm.classList.add("edit-form");
+
+        // Create task name input
+        const editInput = document.createElement("input");
+        editInput.type = "text";
+        editInput.value = task.text;
+        editInput.required = true;
+
+        // Create priority dropdown
+        const editPriority = document.createElement("select");
+
+        ["low", "medium", "high"].forEach(function (priority) {
+            const option = document.createElement("option");
+
+            option.value = priority;
+            option.textContent =
+                priority.charAt(0).toUpperCase() + priority.slice(1);
+
+            if (priority === (task.priority || "medium")) {
+                option.selected = true;
+            }
+
+            editPriority.appendChild(option);
+        });
+
+        // Create Save button
+        const saveButton = document.createElement("button");
+        saveButton.type = "submit";
+        saveButton.textContent = "Save Changes";
+
+        // Create Cancel button
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.textContent = "Cancel";
+
+        // Add controls to editing form
+        editForm.append(
+            editInput,
+            editPriority,
+            saveButton,
+            cancelButton
+        );
+
+        // Show editing form below the task
+        newTask.appendChild(editForm);
+
+        // Save updated task
+        editForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const updatedText = editInput.value.trim();
+
+            if (updatedText === "") {
+                alert("Task cannot be empty.");
+                return;
+            }
+
+            task.text = updatedText;
+            task.priority = editPriority.value;
+
+            saveTasks();
+            renderTasks();
+        });
+
+        // Cancel editing
+        cancelButton.addEventListener("click", function () {
+            editForm.remove();
+        });
     });
 
     // Delete task
     deleteButton.addEventListener("click", function () {
-        newTask.remove();
-
-        tasks = tasks.filter(function (task) {
-            return task.id !== newTask.dataset.taskId;
+        tasks = tasks.filter(function (item) {
+            return item.id !== task.id;
         });
 
         saveTasks();
+        renderTasks();
     });
 
-    // Store a unique ID on the list item
-    newTask.dataset.taskId = crypto.randomUUID();
-
+    // Add task to the page
     taskList.appendChild(newTask);
-
-    return newTask;
 }
 
 // Save tasks to localStorage
@@ -63,13 +163,56 @@ function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Display all saved tasks
+// Display tasks according to search and selected filter
 function renderTasks() {
     taskList.innerHTML = "";
 
-    tasks.forEach(function (task) {
-        const newTask = displayTask(task.text, task.completed);
-        newTask.dataset.taskId = task.id;
+    // Get search text and ignore extra spaces/capitalization
+    const searchText = searchInput.value.toLowerCase().trim();
+
+    // Filter tasks by status and search text
+    const filteredTasks = tasks.filter(function (task) {
+        // Check selected status filter
+        const matchesFilter =
+            currentFilter === "all" ||
+            (currentFilter === "active" && !task.completed) ||
+            (currentFilter === "completed" && task.completed);
+
+        // Check whether task name contains the search text
+        const matchesSearch =
+            task.text.toLowerCase().includes(searchText);
+
+        // Task must match both conditions
+        return matchesFilter && matchesSearch;
+    });
+
+    // Show a message when no tasks match
+    if (filteredTasks.length === 0) {
+        const message = document.createElement("li");
+
+        if (tasks.length === 0) {
+            message.textContent =
+                "No tasks yet. Add your first task!";
+        } else if (searchText !== "") {
+            message.textContent =
+                "No tasks match your search.";
+        } else if (currentFilter === "active") {
+            message.textContent =
+                "No active tasks. Great job!";
+        } else if (currentFilter === "completed") {
+            message.textContent =
+                "No completed tasks yet.";
+        } else {
+            message.textContent = "No tasks found.";
+        }
+
+        taskList.appendChild(message);
+        return;
+    }
+
+    // Display matching tasks
+    filteredTasks.forEach(function (task) {
+        displayTask(task);
     });
 }
 
@@ -84,10 +227,12 @@ taskForm.addEventListener("submit", function (event) {
         return;
     }
 
+    // Create task object
     const task = {
         id: crypto.randomUUID(),
         text: taskText,
-        completed: false
+        completed: false,
+        priority: taskPriority.value
     };
 
     tasks.push(task);
@@ -95,9 +240,24 @@ taskForm.addEventListener("submit", function (event) {
     saveTasks();
     renderTasks();
 
+    // Clear input and focus it
     taskInput.value = "";
     taskInput.focus();
 });
 
-// Load tasks when the page opens
+// Handle filter button clicks
+filterButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        currentFilter = button.dataset.filter;
+
+        renderTasks();
+    });
+});
+
+// Search tasks as the user types
+searchInput.addEventListener("input", function () {
+    renderTasks();
+});
+
+// Display saved tasks when the page opens
 renderTasks();
