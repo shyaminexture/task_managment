@@ -5,6 +5,10 @@ const filterButtons = document.querySelectorAll("#task-filters button");
 const taskPriority = document.querySelector("#task-priority");
 const searchInput = document.querySelector("#search-input");
 
+const totalTasksElement = document.querySelector("#total-tasks");
+const activeTasksElement = document.querySelector("#active-tasks");
+const completedTasksElement = document.querySelector("#completed-tasks");
+
 // Remember the selected filter
 let currentFilter = "all";
 
@@ -67,7 +71,6 @@ function displayTask(task) {
 
     // Edit task text and priority
     editButton.addEventListener("click", function () {
-        // Prevent opening multiple edit forms
         if (newTask.querySelector(".edit-form")) {
             return;
         }
@@ -117,7 +120,6 @@ function displayTask(task) {
             cancelButton
         );
 
-        // Show editing form below the task
         newTask.appendChild(editForm);
 
         // Save updated task
@@ -163,26 +165,44 @@ function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+// Update task statistics
+function updateTaskStats() {
+    const totalTasks = tasks.length;
+
+    const completedTasks = tasks.filter(function (task) {
+        return task.completed;
+    }).length;
+
+    const activeTasks = tasks.filter(function (task) {
+        return !task.completed;
+    }).length;
+
+    totalTasksElement.textContent = totalTasks;
+    activeTasksElement.textContent = activeTasks;
+    completedTasksElement.textContent = completedTasks;
+}
+
 // Display tasks according to search and selected filter
 function renderTasks() {
+    // Update statistics first, using all tasks
+    updateTaskStats();
+
+    // Clear the displayed task list once
     taskList.innerHTML = "";
 
-    // Get search text and ignore extra spaces/capitalization
+    // Get search text
     const searchText = searchInput.value.toLowerCase().trim();
 
     // Filter tasks by status and search text
     const filteredTasks = tasks.filter(function (task) {
-        // Check selected status filter
         const matchesFilter =
             currentFilter === "all" ||
             (currentFilter === "active" && !task.completed) ||
             (currentFilter === "completed" && task.completed);
 
-        // Check whether task name contains the search text
         const matchesSearch =
             task.text.toLowerCase().includes(searchText);
 
-        // Task must match both conditions
         return matchesFilter && matchesSearch;
     });
 
@@ -222,12 +242,10 @@ taskForm.addEventListener("submit", function (event) {
 
     const taskText = taskInput.value.trim();
 
-    // Prevent empty tasks
     if (taskText === "") {
         return;
     }
 
-    // Create task object
     const task = {
         id: crypto.randomUUID(),
         text: taskText,
@@ -240,7 +258,6 @@ taskForm.addEventListener("submit", function (event) {
     saveTasks();
     renderTasks();
 
-    // Clear input and focus it
     taskInput.value = "";
     taskInput.focus();
 });
@@ -249,7 +266,6 @@ taskForm.addEventListener("submit", function (event) {
 filterButtons.forEach(function (button) {
     button.addEventListener("click", function () {
         currentFilter = button.dataset.filter;
-
         renderTasks();
     });
 });
