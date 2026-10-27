@@ -184,10 +184,10 @@ function updateTaskStats() {
 
 // Display tasks according to search and selected filter
 function renderTasks() {
-    // Update statistics first, using all tasks
+    // Update statistics using all tasks
     updateTaskStats();
 
-    // Clear the displayed task list once
+    // Clear the displayed task list
     taskList.innerHTML = "";
 
     // Get search text
@@ -262,10 +262,19 @@ taskForm.addEventListener("submit", function (event) {
     taskInput.focus();
 });
 
-// Handle filter button clicks
+// Handle filter button clicks and highlight the selected filter
 filterButtons.forEach(function (button) {
     button.addEventListener("click", function () {
         currentFilter = button.dataset.filter;
+
+        // Remove active class from every filter button
+        filterButtons.forEach(function (btn) {
+            btn.classList.remove("active");
+        });
+
+        // Highlight the selected filter button
+        button.classList.add("active");
+
         renderTasks();
     });
 });
@@ -273,6 +282,14 @@ filterButtons.forEach(function (button) {
 // Search tasks as the user types
 searchInput.addEventListener("input", function () {
     renderTasks();
+});
+
+// Set All as the default active filter
+filterButtons.forEach(function (button) {
+    button.classList.toggle(
+        "active",
+        button.dataset.filter === currentFilter
+    );
 });
 
 // Display saved tasks when the page opens

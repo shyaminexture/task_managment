@@ -10,6 +10,84 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<!-- Top Navigation -->
+<nav class="top-nav">
+    <a href="#" class="brand">
+        <span class="brand-icon">✓</span>
+        <span>TaskFlow</span>
+    </a>
+
+    <div class="nav-links">
+        <button class="nav-link active" data-view="dashboard">
+            Dashboard
+        </button>
+
+        <button class="nav-link" data-view="tasks">
+            My Tasks
+        </button>
+
+        <button class="nav-link" data-view="my-day">
+            My Day
+        </button>
+
+        <button class="nav-link" data-view="insights">
+            Insights
+        </button>
+    </div>
+
+    <div class="nav-actions">
+        <button
+            type="button"
+            id="theme-toggle"
+            class="icon-button"
+            aria-label="Toggle dark mode"
+            title="Toggle appearance"
+        >☾</button>
+
+        <div class="menu-container">
+            <button
+                type="button"
+                id="menu-toggle"
+                class="icon-button"
+                aria-label="Open menu"
+                aria-expanded="false"
+                aria-controls="more-menu"
+            >⋮</button>
+
+            <div id="more-menu" class="dropdown-menu" hidden>
+                <button type="button" id="export-tasks">
+                    <span>↗</span> Export tasks
+                </button>
+
+                <button type="button" id="import-trigger">
+                    <span>↙</span> Import tasks
+                </button>
+
+                <div class="menu-divider"></div>
+
+                <button type="button" id="settings-trigger">
+                    <span>⚙</span> Settings
+                </button>
+
+                <button
+                    type="button"
+                    id="clear-tasks"
+                    class="danger-action"
+                >
+                    <span>⌫</span> Clear all tasks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <input
+        type="file"
+        id="import-file"
+        accept=".json,application/json"
+        hidden
+    >
+</nav>
+
     <h1>Task Management</h1>
     <p>Organize your day, one task at a time.</p>
 
